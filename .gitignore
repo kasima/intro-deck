@@ -1,0 +1,4 @@
+.DS_Store
+.gstack/
+# source photos stay local
+assets/ref/
