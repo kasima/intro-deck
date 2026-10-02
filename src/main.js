@@ -33,6 +33,8 @@ class Boot extends Phaser.Scene {
 
   preload() {
     for (const [id, path] of Object.entries(ASSETS.bg)) this.load.image(`bg-${id}`, path);
+    this.load.image('poster', ASSETS.poster);
+    ASSETS.spin.forEach((path, i) => this.load.image(`spin-${i}`, path));
     for (const [age, anims] of Object.entries(ASSETS.hero)) {
       for (const [name, frames] of Object.entries(anims)) {
         frames.forEach((path, i) => this.load.image(`hero-${age}-${name}-${i}`, path));
@@ -64,8 +66,15 @@ class Boot extends Phaser.Scene {
       }
     }
 
+    this.anims.create({
+      key: 'spin',
+      frames: ASSETS.spin.map((_, i) => ({ key: `spin-${i}` })),
+      frameRate: 8,
+      repeat: -1,
+    });
+
     try {
-      await document.fonts.load(`8px ${FONT}`);
+      await Promise.all([document.fonts.load(`8px ${FONT}`), document.fonts.load('10px VT323')]);
     } catch {}
     // ?ch=N jumps straight to chapter N (1-based) for testing
     const ch = parseInt(new URLSearchParams(location.search).get('ch'), 10);
@@ -79,27 +88,106 @@ class Title extends Phaser.Scene {
     super('title');
   }
 
+  // A static "movie poster" splash. Pressing start makes the hero leap off
+  // the stage and drop into chapter 1.
   create() {
     showControls(false);
-    this.add.image(0, 0, 'sky-born').setOrigin(0);
-    if (this.textures.exists('bg-born')) this.add.image(W / 2, H, 'bg-born').setOrigin(0.5, 1).setScale(H / 224);
-    else this.add.image(0, 0, 'far-born').setOrigin(0);
-    text(this, W / 2, 70, 'KASIMA', 32, '#ffffff', { stroke: '#3b1d0a', strokeThickness: 6 }).setOrigin(0.5);
-    text(this, W / 2, 112, 'a life in ten levels', 8, '#3b1d0a').setOrigin(0.5);
-    const prompt = text(this, W / 2, 180, 'TAP TO START', 10, '#ffffff', { stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
-    this.tweens.add({ targets: prompt, alpha: 0.2, duration: 600, yoyo: true, repeat: -1 });
+    this.leaving = false;
+
+    this.add.image(W / 2, H, 'poster').setOrigin(0.5, 1).setScale(H / 224);
+
+    // slowly turning light rays behind the hero
+    const rays = this.add.graphics({ x: W / 2, y: 150 }).setBlendMode(Phaser.BlendModes.ADD);
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      rays.fillStyle(0xffd27a, 0.07);
+      rays.fillTriangle(0, 0, Math.cos(a) * 320, Math.sin(a) * 320, Math.cos(a + 0.18) * 320, Math.sin(a + 0.18) * 320);
+    }
+    this.rays = rays;
+    this.raySpeed = 0.004;
+
+    // spotlight pool on the stage
+    this.add.ellipse(W / 2, 204, 90, 16, 0xfff1b8, 0.35).setBlendMode(Phaser.BlendModes.ADD);
+
+    this.hero = this.add.sprite(W / 2, 210, 'spin-0').setOrigin(0.5, 1).setScale(2).play('spin');
+    this.tweens.add({ targets: this.hero, y: 204, duration: 900, ease: 'Sine.InOut', yoyo: true, repeat: -1 });
+
+    this.poster = this.add.dom(0, 0, posterElement()).setOrigin(0);
 
     const start = () => {
-      if (this.scale.isFullscreen === false && this.sys.game.device.input.touch) {
+      if (this.leaving) return;
+      this.leaving = true;
+      if (this.sys.game.device.input.touch && !this.scale.isFullscreen) {
         try {
           this.scale.startFullscreen();
         } catch {}
       }
-      this.scene.start('level', { index: 0, score: 0 });
+      this.leap();
     };
     this.input.once('pointerdown', start);
     this.input.keyboard.once('keydown', start);
   }
+
+  update() {
+    this.rays.rotation += this.raySpeed;
+  }
+
+  leap() {
+    this.poster.node.classList.add('exit');
+    this.tweens.killTweensOf(this.hero);
+    this.hero.stop().setTexture('hero-adult-jump-0');
+    this.raySpeed = 0.03;
+    // crouch-hop up, then plunge off the bottom of the screen
+    this.tweens.chain({
+      targets: this.hero,
+      tweens: [
+        { y: this.hero.y - 36, duration: 260, ease: 'Quad.Out' },
+        {
+          y: H + 160,
+          duration: 520,
+          ease: 'Quad.In',
+          onStart: () => this.hero.setTexture('hero-adult-jump-2'),
+        },
+      ],
+      onComplete: () => {
+        this.cameras.main.flash(250, 255, 255, 255);
+        this.time.delayedCall(180, () => this.scene.start('level', { index: 0, score: 0, dropIn: true }));
+      },
+    });
+    this.cameras.main.shake(300, 0.004);
+  }
+}
+
+const HEADLINES = {
+  left: [
+    ['FOUNDER', 'Typhoon, Thailand’s open-source frontier AI lab'],
+    ['MOST DOWNLOADED', 'open-source Thai LLM family'],
+    ['PUBLISHED', 'ACL · EMNLP · Interspeech'],
+  ],
+  right: [
+    ['CTO', 'OMG Network · Ethereum L2'],
+    ['EX-GITHUB', 'founded billing & payments'],
+    ['25+ YEARS', 'startups in SF & Bangkok'],
+  ],
+};
+
+function posterElement() {
+  const col = (side) =>
+    `<div class="col ${side}">${HEADLINES[side]
+      .map(([big, small]) => `<div class="hl"><b>${big}</b><span>${small}</span></div>`)
+      .join('')}</div>`;
+  const el = document.createElement('div');
+  el.className = 'poster';
+  el.innerHTML = `
+    <div class="kicker">A LIFE IN TEN LEVELS</div>
+    <div class="title">KASIMA</div>
+    <div class="surname">THARNPIPITCHAI</div>
+    ${col('left')}
+    ${col('right')}
+    <div class="sticker">NOW AT<br>GULF!</div>
+    <div class="press">PRESS SPACE · TAP TO PLAY</div>
+    <div class="route">BANGKOK · MARYLAND · CHICAGO · SAN FRANCISCO · BANGKOK</div>`;
+  return el;
 }
 
 class Level extends Phaser.Scene {
@@ -112,13 +200,15 @@ class Level extends Phaser.Scene {
     this.score = data.score;
     this.chapter = CHAPTERS[this.index];
     this.finished = false;
+    this.dropIn = !!data.dropIn;
   }
 
   create() {
     const c = this.chapter;
     const worldW = c.length + 160;
     showControls(true);
-    this.physics.world.setBounds(0, 0, worldW, H + 200);
+    // extends above the screen so the hero can fall in from the sky
+    this.physics.world.setBounds(0, -200, worldW, H + 400);
     this.physics.world.checkCollision.down = false;
 
     this.buildBackground(c);
@@ -130,7 +220,7 @@ class Level extends Phaser.Scene {
     const age = c.age;
     this.heroAnims = ASSETS.hero[age];
     const key = this.heroAnims ? `hero-${age}-idle-0` : `player-${age}`;
-    this.player = this.physics.add.sprite(40, GROUND_Y - 40, key).setOrigin(0.5, 1);
+    this.player = this.physics.add.sprite(this.dropIn ? 80 : 40, this.dropIn ? -40 : GROUND_Y - 40, key).setOrigin(0.5, 1);
     this.player.setCollideWorldBounds(true);
     this.player.body.setMaxVelocityY(600);
     if (this.heroAnims) {
@@ -152,7 +242,8 @@ class Level extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldW, H);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12, -60, 0);
     this.cameras.main.setRoundPixels(true);
-    this.cameras.main.fadeIn(300, 0, 0, 0);
+    if (this.dropIn) this.cameras.main.fadeIn(400, 255, 255, 255);
+    else this.cameras.main.fadeIn(300, 0, 0, 0);
 
     // HUD
     text(this, 8, 8, `${c.year}  ${c.title}`, 8, '#ffffff', { stroke: '#000', strokeThickness: 3 }).setScrollFactor(0);
@@ -423,6 +514,7 @@ window.game = new Phaser.Game({
   width: W,
   height: H,
   pixelArt: true,
+  dom: { createContainer: true },
   backgroundColor: '#000000',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   physics: { default: 'arcade', arcade: { gravity: { y: 900 }, debug: false } },

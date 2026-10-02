@@ -14,8 +14,9 @@ curl -sfL -o "$tmp/c.zip" "https://api.pixellab.ai/mcp/characters/$id/download"
 unzip -q "$tmp/c.zip" -d "$tmp/c"
 
 mkdir -p "$dest"
-cp "$tmp"/c/*/rotations/east.png "$dest/east.png"
-cp "$tmp"/c/*/rotations/south.png "$dest/south.png"
+rm -rf "${dest:?}/rotations"
+mkdir -p "$dest/rotations"
+cp "$tmp"/c/*/rotations/*.png "$dest/rotations/"
 for anim in idle run jump; do
   src=$(echo "$tmp"/c/*/animations/"$anim"/east)
   [ -d "$src" ] || { echo "missing animation: $anim" >&2; continue; }
