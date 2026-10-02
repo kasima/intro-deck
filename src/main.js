@@ -318,7 +318,8 @@ class Level extends Phaser.Scene {
         return;
       }
       const key = `hero-${age}-${moving ? 'run' : 'idle'}`;
-      if (p.anims.currentAnim?.key !== key) p.play(key);
+      // anims.stop() in the air keeps currentAnim set, so also check isPlaying
+      if (!p.anims.isPlaying || p.anims.currentAnim?.key !== key) p.play(key);
       return;
     }
     // placeholder: bob while running, stretch while airborne
