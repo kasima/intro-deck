@@ -131,8 +131,8 @@ body.hide-controls #controls { display: none; }
 }
 
 .poster .sticker {
-  top: 72px; left: 288px;
-  width: 44px; height: 44px;
+  top: 66px; left: 284px;
+  width: 58px; height: 58px;
   display: flex; align-items: center; justify-content: center;
   font: 6px/1.5 'Press Start 2P', monospace;
   color: #3b0764;
