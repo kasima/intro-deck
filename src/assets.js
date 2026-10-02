@@ -22,6 +22,7 @@ export const ASSETS = {
     ]),
   ),
   poster: 'assets/bg/poster.png',
+  logo: 'assets/logo/oom.png',
   // adult rotations in turning order, for the title-screen spin
   spin: ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'].map(
     (d) => `assets/hero/adult/rotations/${d}.png`,

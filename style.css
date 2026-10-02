@@ -83,19 +83,13 @@ body.hide-controls #controls { display: none; }
 .poster > * { position: absolute; transition: transform 0.45s cubic-bezier(.6, -0.3, .7, 0), opacity 0.3s; }
 
 .poster .kicker {
-  top: 3px; left: 0; right: 0;
+  top: 2px; left: 0; right: 0;
   font: 6px 'Press Start 2P', monospace;
   letter-spacing: 2px;
   color: #ffd27a;
 }
-.poster .title {
-  top: 0; left: 0; right: 0;
-  font: 800 60px/1 'Kanit', sans-serif;
-  color: #fff6d8;
-  text-shadow: 0 2px 0 #c2410c, 0 4px 0 #7c1d6f, 0 0 12px rgba(255, 190, 90, 0.8);
-}
 .poster .surname {
-  top: 56px; left: 0; right: 0;
+  top: 67px; left: 0; right: 0;
   font: 10px 'Press Start 2P', monospace;
   letter-spacing: 4px;
   color: #ffd27a;
@@ -103,7 +97,7 @@ body.hide-controls #controls { display: none; }
 }
 
 .poster .col {
-  top: 72px;
+  top: 84px;
   width: 136px;
   display: flex;
   flex-direction: column;
@@ -131,7 +125,7 @@ body.hide-controls #controls { display: none; }
 }
 
 .poster .sticker {
-  top: 66px; left: 284px;
+  top: 80px; left: 284px;
   width: 58px; height: 58px;
   display: flex; align-items: center; justify-content: center;
   font: 6px/1.5 'Press Start 2P', monospace;
@@ -162,7 +156,7 @@ body.hide-controls #controls { display: none; }
 }
 
 /* exit: everything flies off-screen when the game starts */
-.poster.exit .kicker, .poster.exit .title, .poster.exit .surname { transform: translateY(-120px); }
+.poster.exit .kicker, .poster.exit .surname { transform: translateY(-120px); }
 .poster.exit .col.left { transform: translateX(-200px); }
 .poster.exit .col.right { transform: translateX(200px); }
 .poster.exit .sticker { transform: rotate(200deg) scale(0); animation: none; }

@@ -34,6 +34,7 @@ class Boot extends Phaser.Scene {
   preload() {
     for (const [id, path] of Object.entries(ASSETS.bg)) this.load.image(`bg-${id}`, path);
     this.load.image('poster', ASSETS.poster);
+    this.load.image('logo', ASSETS.logo);
     ASSETS.spin.forEach((path, i) => this.load.image(`spin-${i}`, path));
     for (const [age, anims] of Object.entries(ASSETS.hero)) {
       for (const [name, frames] of Object.entries(anims)) {
@@ -74,7 +75,7 @@ class Boot extends Phaser.Scene {
     });
 
     try {
-      await Promise.all([document.fonts.load(`8px ${FONT}`), document.fonts.load('10px VT323'), document.fonts.load('800 30px Kanit', 'ออม')]);
+      await Promise.all([document.fonts.load(`8px ${FONT}`), document.fonts.load('10px VT323')]);
     } catch {}
     // ?ch=N jumps straight to chapter N (1-based) for testing
     const ch = parseInt(new URLSearchParams(location.search).get('ch'), 10);
@@ -114,6 +115,9 @@ class Title extends Phaser.Scene {
 
     this.poster = this.add.dom(0, 0, posterElement()).setOrigin(0);
 
+    // pixel-art ออม logo (PixelLab), drawn on the canvas so it scales crisply
+    this.logo = this.add.image(W / 2, 11, 'logo').setOrigin(0.5, 0);
+
     const start = () => {
       if (this.leaving) return;
       this.leaving = true;
@@ -134,6 +138,7 @@ class Title extends Phaser.Scene {
 
   leap() {
     this.poster.node.classList.add('exit');
+    this.tweens.add({ targets: this.logo, y: -80, duration: 450, ease: 'Back.In' });
     this.tweens.killTweensOf(this.hero);
     this.hero.stop().setTexture('hero-adult-jump-0');
     this.raySpeed = 0.03;
@@ -180,7 +185,6 @@ function posterElement() {
   el.className = 'poster';
   el.innerHTML = `
     <div class="kicker">A LIFE IN TEN LEVELS</div>
-    <div class="title" lang="th">ออม</div>
     <div class="surname">KASIMA</div>
     ${col('left')}
     ${col('right')}
