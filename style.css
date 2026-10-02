@@ -89,17 +89,17 @@ body.hide-controls #controls { display: none; }
   color: #ffd27a;
 }
 .poster .title {
-  top: 18px; left: 0; right: 0;
-  font: 30px/1 'Press Start 2P', monospace;
+  top: 0; left: 0; right: 0;
+  font: 800 60px/1 'Kanit', sans-serif;
   color: #fff6d8;
   text-shadow: 0 2px 0 #c2410c, 0 4px 0 #7c1d6f, 0 0 12px rgba(255, 190, 90, 0.8);
 }
 .poster .surname {
-  top: 53px; left: 0; right: 0;
-  font: 7px 'Press Start 2P', monospace;
-  letter-spacing: 3px;
+  top: 56px; left: 0; right: 0;
+  font: 10px 'Press Start 2P', monospace;
+  letter-spacing: 4px;
   color: #ffd27a;
-  text-shadow: 0 1px 0 #000;
+  text-shadow: 1px 1px 0 #3b0764, -1px 1px 0 #3b0764, 0 0 6px #000;
 }
 
 .poster .col {

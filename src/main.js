@@ -74,7 +74,7 @@ class Boot extends Phaser.Scene {
     });
 
     try {
-      await Promise.all([document.fonts.load(`8px ${FONT}`), document.fonts.load('10px VT323')]);
+      await Promise.all([document.fonts.load(`8px ${FONT}`), document.fonts.load('10px VT323'), document.fonts.load('800 30px Kanit', 'ออม')]);
     } catch {}
     // ?ch=N jumps straight to chapter N (1-based) for testing
     const ch = parseInt(new URLSearchParams(location.search).get('ch'), 10);
@@ -180,8 +180,8 @@ function posterElement() {
   el.className = 'poster';
   el.innerHTML = `
     <div class="kicker">A LIFE IN TEN LEVELS</div>
-    <div class="title">KASIMA</div>
-    <div class="surname">THARNPIPITCHAI</div>
+    <div class="title" lang="th">ออม</div>
+    <div class="surname">KASIMA</div>
     ${col('left')}
     ${col('right')}
     <div class="sticker">NOW AT<br>GULF!</div>
