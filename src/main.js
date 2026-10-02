@@ -114,6 +114,8 @@ class Title extends Phaser.Scene {
     this.tweens.add({ targets: this.hero, y: 204, duration: 900, ease: 'Sine.InOut', yoyo: true, repeat: -1 });
 
     this.poster = this.add.dom(0, 0, posterElement()).setOrigin(0);
+    // Phaser makes DOM elements clickable by default; let taps reach the canvas
+    this.poster.pointerEvents = 'none';
 
     // pixel-art ออม logo (PixelLab), drawn on the canvas so it scales crisply
     this.logo = this.add.image(W / 2, 11, 'logo').setOrigin(0.5, 0);
@@ -121,14 +123,12 @@ class Title extends Phaser.Scene {
     const start = () => {
       if (this.leaving) return;
       this.leaving = true;
-      if (this.sys.game.device.input.touch && !this.scale.isFullscreen) {
-        try {
-          this.scale.startFullscreen();
-        } catch {}
-      }
+      goFullscreen(this);
       this.leap();
     };
-    this.input.once('pointerdown', start);
+    // pointerup, not pointerdown: browsers only grant fullscreen from a
+    // completed tap/click
+    this.input.once('pointerup', start);
     this.input.keyboard.once('keydown', start);
   }
 
@@ -163,6 +163,20 @@ class Title extends Phaser.Scene {
   }
 }
 
+// Android Chrome can go fullscreen and lock landscape. iPhone Safari can't
+// fullscreen a page at all; there, Add to Home Screen is the only way to
+// drop the browser bars (see manifest.webmanifest).
+function goFullscreen(scene) {
+  if (!scene.sys.game.device.input.touch || scene.scale.isFullscreen) return;
+  try {
+    scene.scale.startFullscreen();
+    screen.orientation?.lock?.('landscape').catch(() => {});
+  } catch {}
+}
+
+const isIOSBrowser =
+  /iPhone|iPod/.test(navigator.userAgent) && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches;
+
 const HEADLINES = {
   left: [
     ['FOUNDER', 'Typhoon, Thailand’s open-source frontier AI lab'],
@@ -190,6 +204,7 @@ function posterElement() {
     ${col('right')}
     <div class="sticker">NOW AT<br>GULF!</div>
     <div class="press">PRESS SPACE · TAP TO PLAY</div>
+    ${isIOSBrowser ? '<div class="tip">Full screen: Share → Add to Home Screen</div>' : ''}
     <div class="route">BANGKOK · MARYLAND · CHICAGO · SAN FRANCISCO · BANGKOK</div>`;
   return el;
 }

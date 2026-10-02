@@ -147,6 +147,11 @@ body.hide-controls #controls { display: none; }
   animation: blink 1s steps(2) infinite;
 }
 @keyframes blink { 50% { opacity: 0.25; } }
+.poster .tip {
+  bottom: 40px; left: 0; right: 0;
+  font-size: 9px;
+  color: #ffe14d;
+}
 .poster .route {
   bottom: 8px; left: 0; right: 0;
   font-size: 9px;
@@ -160,4 +165,4 @@ body.hide-controls #controls { display: none; }
 .poster.exit .col.left { transform: translateX(-200px); }
 .poster.exit .col.right { transform: translateX(200px); }
 .poster.exit .sticker { transform: rotate(200deg) scale(0); animation: none; }
-.poster.exit .press, .poster.exit .route { transform: translateY(60px); opacity: 0; animation: none; }
+.poster.exit .press, .poster.exit .route, .poster.exit .tip { transform: translateY(60px); opacity: 0; animation: none; }
